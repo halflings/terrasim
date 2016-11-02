@@ -5,7 +5,7 @@ import random
 class Cell(enum.IntEnum):
     WATER = 0
     DIRT = 1
-    GREEN = 2
+    GRASS = 2
     MOUNTAIN = 3
 
 
