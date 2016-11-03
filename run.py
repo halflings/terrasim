@@ -1,5 +1,6 @@
 import pyglet
 
+from graphics import Viewport
 from world import World, Cell
 
 
@@ -21,11 +22,16 @@ class WorldView(object):
 
 
 class MainWindow(pyglet.window.Window):
-    DEFAULT_WORLD_SIZE = 25
+    DEFAULT_WORLD_SIZE = 35
+    BASE_DISPLACEMENT = 15
+    MOTION_DISPLACEMENTS = {pyglet.window.key.MOTION_RIGHT: (+BASE_DISPLACEMENT, 0), pyglet.window.key.MOTION_LEFT: (
+        -BASE_DISPLACEMENT, 0), pyglet.window.key.MOTION_UP: (0, +BASE_DISPLACEMENT), pyglet.window.key.MOTION_DOWN: (0, -BASE_DISPLACEMENT)}
 
     def __init__(self, width=800, height=600):
         super().__init__(width=width, height=height)
         self.fps_display = pyglet.clock.ClockDisplay()
+        self.viewport = Viewport(self, (width, height))
+        self.x, self.y = 0, 0
 
         # World/map management
         self.world = World(width=self.DEFAULT_WORLD_SIZE, height=self.DEFAULT_WORLD_SIZE)
@@ -42,7 +48,9 @@ class MainWindow(pyglet.window.Window):
 
     def on_draw(self):
         self.clear()
-        self.world_view.draw()
+        Viewport.set_camera(self.x, self.y)
+        with self.viewport:
+            self.world_view.draw()
         self.sword_sprite.draw()
         self.label.draw()
         self.fps_display.draw()
@@ -51,6 +59,10 @@ class MainWindow(pyglet.window.Window):
         print('A keyboard key was pressed.')
         if symbol == pyglet.window.key.ESCAPE:
             self.on_close()
+
+    def on_text_motion(self, motion):
+        self.x += self.MOTION_DISPLACEMENTS[motion][0]
+        self.y += self.MOTION_DISPLACEMENTS[motion][1]
 
     def on_mouse_press(self, x, y, button, modifiers):
         print('Mouse pressed on coordinates ({}, {})'.format(x, y))
