@@ -1,9 +1,11 @@
+import random
+
 import pyglet
 
 from constants import BASE_DISPLACEMENT, UPDATE_RATE
 from game import Game
 from graphics import Viewport
-from views import WorldView
+from views import WorldView, CharactersView
 
 
 class MainWindow(pyglet.window.Window):
@@ -20,8 +22,10 @@ class MainWindow(pyglet.window.Window):
         self.x, self.y = 0, 0
 
         # World/map management
-        self.game = Game()
+        self.seed = random.Random()
+        self.game = Game(seed=self.seed)
         self.world_view = WorldView(self, self.game.world)
+        self.characters_view = CharactersView(self, self.game)
 
         # Various graphical details
         sword_image = pyglet.resource.image('res/img/shortsword.png')
@@ -45,6 +49,9 @@ class MainWindow(pyglet.window.Window):
         Viewport.set_camera(self.x, self.y)
         with self.viewport:
             self.world_view.draw()
+            self.characters_view.draw()
+            self.world_view.draw_selected_cell()
+
         self.label.draw()
         self.fps_display.draw()
 
