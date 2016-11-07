@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-import math
 import random
 
 from constants import DEFAULT_CHARACTER_NAME, DEFAULT_WORLD_SIZE
@@ -11,6 +10,17 @@ class Character:
     def __init__(self, name=DEFAULT_CHARACTER_NAME, x=0, y=0):
         self.name = name
         self.x, self.y = x, y
+        self.goal = None
+
+    def update(self, dt):
+        if self.goal is None:
+            return
+        self.x += (self.goal[0] - self.x) * dt
+        self.y += (self.goal[1] - self.y) * dt
+        if (self.x - self.goal[0])**2 + (self.y - self.goal[1])**2 < 0.1:
+            # Goal reached
+            self.x, self.y = self.goal
+            self.goal = None
 
 
 class Game:
@@ -35,9 +45,10 @@ class Game:
 
     def update(self, dt):
         self.game_duration = datetime.now() - self.creation_time
-        sine = math.sin(self.game_duration.microseconds / 200000.)
         for character in self.characters:
-            if hash(character.name) % 2:
-                character.x += 0.15 * sine
-            else:
-                character.y += 0.15 * sine
+            character.update(dt)
+            # Setting a random goal, for debugging only.
+            if character.goal is None:
+                character.goal = (
+                    random.randint(0, self.world.width - 1),
+                    random.randint(0, self.world.height - 1))

@@ -53,7 +53,7 @@ class WorldView:
             vertices = [x, y, x + dx, y, x + dx, y + dy, x, y + dy]
             pyglet.graphics.draw(
                 4, pyglet.gl.GL_LINE_LOOP, ('v2f', vertices),
-                ('s3B', (0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255)))
+                ('c3B', (0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255)))
 
 
 class CharacterView:
@@ -67,8 +67,17 @@ class CharacterView:
             img=self.DEFAULT_TEXTURE, x=self.character.x, y=self.character.y, batch=batch)
 
     def draw(self):
-        self.sprite.x = self.character.x * WorldView.CELL_SIZE
-        self.sprite.y = self.character.y * WorldView.CELL_SIZE
+        x = self.character.x * WorldView.CELL_SIZE
+        y = self.character.y * WorldView.CELL_SIZE
+        self.sprite.x = x
+        self.sprite.y = y
+        if self.character.goal is not None:
+            goal_x = self.character.goal[0] * WorldView.CELL_SIZE
+            goal_y = self.character.goal[1] * WorldView.CELL_SIZE
+            vertices = [x, y, goal_x, goal_y]
+            vertices = [v + WorldView.CELL_SIZE / 2 for v in vertices]
+            pyglet.graphics.draw(
+                2, pyglet.gl.GL_LINES, ('v2f', vertices), ('c4B', (255, 255, 255, 125) * 2))
 
 
 class CharactersView:
