@@ -10,10 +10,10 @@ from views import WorldView, CharactersView
 
 class MainWindow(pyglet.window.Window):
     DEFAULT_WORLD_SIZE = 35
-    MOTION_DISPLACEMENTS = {pyglet.window.key.MOTION_RIGHT: (+BASE_DISPLACEMENT, 0),
-                            pyglet.window.key.MOTION_LEFT: (-BASE_DISPLACEMENT, 0),
-                            pyglet.window.key.MOTION_UP: (0, +BASE_DISPLACEMENT),
-                            pyglet.window.key.MOTION_DOWN: (0, -BASE_DISPLACEMENT)}
+    MOTION_DISPLACEMENTS = {pyglet.window.key.MOTION_RIGHT: (+1, 0),
+                            pyglet.window.key.MOTION_LEFT: (-1, 0),
+                            pyglet.window.key.MOTION_UP: (0, +1),
+                            pyglet.window.key.MOTION_DOWN: (0, -1)}
 
     def __init__(self, width=800, height=600):
         super().__init__(width=width, height=height)
@@ -38,6 +38,9 @@ class MainWindow(pyglet.window.Window):
                                        x=self.width - 10, y=20,
                                        anchor_x='right', anchor_y='center')
 
+        # Other flags, etc.
+        self.camera_speed = BASE_DISPLACEMENT
+
         # Setting a clock for updating the state of the game
         pyglet.clock.schedule_interval(self.update, UPDATE_RATE)
 
@@ -60,8 +63,12 @@ class MainWindow(pyglet.window.Window):
             self.on_close()
 
     def on_text_motion(self, motion):
-        self.x += self.MOTION_DISPLACEMENTS[motion][0]
-        self.y += self.MOTION_DISPLACEMENTS[motion][1]
+        self.x += self.MOTION_DISPLACEMENTS[motion][0] * self.camera_speed
+        self.y += self.MOTION_DISPLACEMENTS[motion][1] * self.camera_speed
+        self.camera_speed = min(int(self.camera_speed * 1.1), BASE_DISPLACEMENT * 3)
+
+    def on_key_release(self, symbol, modifiers):
+        self.camera_speed = BASE_DISPLACEMENT
 
     def on_mouse_press(self, x, y, button, modifiers):
         pass
