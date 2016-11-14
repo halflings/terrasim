@@ -19,7 +19,7 @@ class World(object):
         self.cells = self._generate_map(width, height)
 
     def _generate_map(self, width, height):
-        cells = [[Terrain.WATER for j in range(width)] for i in range(height)]
+        cells = [[Terrain.WATER for y in range(height)] for x in range(width)]
         num_land_clusters = max(1, int(self.rand.gauss(mu=4, sigma=2)))
         print("num_clusters={}".format(num_land_clusters))
         land_clusters = []
@@ -32,7 +32,7 @@ class World(object):
                 for y in range(cluster[1] - int(y_radius), cluster[1] + int(y_radius)):
                     x, y = self.__snap_point(x, y)
                     if x > self.rand.gauss(mu=self.width * 0.2, sigma=self.width * 0.1) and y > self.rand.gauss(mu=self.height * 0.2, sigma=self.height * 0.1):
-                        cells[y][x] = Terrain.DIRT
+                        cells[x][y] = Terrain.DIRT
         return cells
 
     def __snap_point(self, x, y):

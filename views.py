@@ -1,4 +1,4 @@
-from cocos.tiles import TileSet, RectCell, RectMapLayer
+import cocos
 import pyglet
 
 from world import Terrain
@@ -6,31 +6,45 @@ from world import Terrain
 TERRAIN_TEXTURES = {Terrain.GRASS: 'grass.png', Terrain.DIRT: 'dirt.png',
                     Terrain.WATER: 'water.png', Terrain.MOUNTAIN: 'mountain.png'}
 CELL_SIZE = 32
+DEFAULT_CHARACTER = pyglet.resource.image('res/img/dummy.png')
 
 
-class WorldMap(RectMapLayer):
+class WorldMap(cocos.tiles.RectMapLayer):
 
-    def __init__(self, world, id=0):
+    def __init__(self, world, id=None):
         self.world = world
         cells = self._generate_cells(world, cell_size=CELL_SIZE)
-        super(WorldMap, self).__init__(id=0, tw=CELL_SIZE, th=CELL_SIZE, cells=cells)
+        super(WorldMap, self).__init__(id=None, tw=CELL_SIZE, th=CELL_SIZE, cells=cells)
 
     def _generate_cells(self, world, cell_size):
-        tileset = TileSet(0, None)
+        tileset = cocos.tiles.TileSet(0, None)
         for cell_type in list(Terrain):
             image_path = 'res/img/tiles/{}'.format(TERRAIN_TEXTURES[cell_type])
             image = pyglet.resource.image(image_path)
             tileset.add(image=image, id=cell_type, properties={})
 
         cells = []
-        for i in range(self.world.width):
+        for i in range(world.width):
             column = []
-            for j in range(self.world.height):
+            for j in range(world.height):
                 tile = tileset[world.cells[i][j]]
-                cell = RectCell(i, j, cell_size, cell_size, properties={}, tile=tile)
+                cell = cocos.tiles.RectCell(i, j, cell_size, cell_size, properties={}, tile=tile)
                 column.append(cell)
             cells.append(column)
         return cells
+
+class CharacterView2(cocos.layer.ScrollableLayer):
+    def __init__(self, character):
+        super(CharacterView2, self).__init__()
+        self.character = character
+        self.add(cocos.sprite.Sprite(DEFAULT_CHARACTER,
+                                     position=(character.x * CELL_SIZE,
+                                               character.y * CELL_SIZE),
+                                     anchor=(CELL_SIZE / 2, CELL_SIZE / 2)
+                                     ))
+
+
+# All the views below are from the old pyglet version and should be removed.
 
 class WorldView:
 
@@ -52,16 +66,16 @@ class WorldView:
     def generate_sprites(self):
         min_x = max(0, self.window.x // CELL_SIZE)
         min_y = max(0, self.window.y // CELL_SIZE)
-        cell_width = (self.window.width // CELL_SIZE) + 1
-        cell_height = (self.window.height // CELL_SIZE) + 1
-        max_x = min(min_x + cell_width, self.world.width - 1)
-        max_y = min(min_y + cell_height, self.world.height - 1)
+        view_cell_width = (self.window.width // CELL_SIZE) + 1
+        view_cell_height = (self.window.height // CELL_SIZE) + 1
+        max_x = min(min_x + view_cell_width, self.world.width - 1)
+        max_y = min(min_y + view_cell_height, self.world.height - 1)
 
         map_sprites = []
         for x in range(min_x, max_x + 1):
             for y in range(min_y, max_y + 1):
                 sprite = pyglet.sprite.Sprite(
-                    self.textures[self.world.cells[y][x]], x=x * CELL_SIZE,
+                    self.textures[self.world.cells[x][y]], x=x * CELL_SIZE,
                     y=y * CELL_SIZE, batch=self.batch)
                 map_sprites.append(sprite)
         return map_sprites
@@ -85,13 +99,12 @@ class WorldView:
 
 class CharacterView:
 
-    DEFAULT_TEXTURE = pyglet.resource.image('res/img/dummy.png')
 
     def __init__(self, window, batch, character):
         self.window = window
         self.character = character
         self.sprite = pyglet.sprite.Sprite(
-            img=self.DEFAULT_TEXTURE, x=self.character.x, y=self.character.y, batch=batch)
+            img=DEFAULT_CHARACTER, x=self.character.x, y=self.character.y, batch=batch)
 
     def draw(self):
         x = self.character.x * CELL_SIZE

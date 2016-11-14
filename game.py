@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import random
 
-from constants import DEFAULT_CHARACTER_NAME, DEFAULT_WORLD_SIZE
+from constants import DEFAULT_CHARACTER_NAME, DEFAULT_WORLD_SIZE, DEFAULT_NUMBER_CHARACTERS
 from world import World
 
 
@@ -25,11 +25,12 @@ class Character:
 
 class Game:
 
-    def __init__(self, seed=None, n_characters=5):
+    def __init__(self, seed=None, world_width=DEFAULT_WORLD_SIZE, world_height=DEFAULT_WORLD_SIZE,
+                 n_characters=DEFAULT_NUMBER_CHARACTERS):
         if seed is None:
             seed = random.Random()
         self.seed = seed
-        self.world = World(width=DEFAULT_WORLD_SIZE, height=DEFAULT_WORLD_SIZE, seed=self.seed)
+        self.world = World(width=world_width, height=world_height, seed=self.seed)
         self.characters = self.generate_characters(n_characters)
         self.creation_time = datetime.now()
         self.game_duration = timedelta(microseconds=0)
